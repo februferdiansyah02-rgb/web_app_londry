@@ -1,8 +1,30 @@
 import React, { useState } from 'react';
-
+import { apiLogin } from '../api';
 
 export default function Login({ onNavigateToRegister, onNavigateToForgotPassword, onLoginSuccess }) {
   const [activeTab, setActiveTab] = useState('Pelanggan');
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await apiLogin(email, password);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      onLoginSuccess?.(data);
+    } catch (err) {
+      setError(err.message || 'Login gagal. Coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-200 flex items-center justify-center p-4 font-sans">
@@ -24,36 +46,50 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
           <div className="bg-gray-50 rounded-2xl p-1.5 flex justify-between items-center mb-6">
             <button 
               onClick={() => setActiveTab('Pelanggan')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${
-                activeTab === 'Pelanggan' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'
-              }`}>Pelanggan</button>
+              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Pelanggan' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Pelanggan</button>
             <button 
               onClick={() => setActiveTab('Mitra Laundry')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${
-                activeTab === 'Mitra Laundry' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'
-              }`}>Mitra Laundry</button>
+              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Mitra Laundry' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Mitra Laundry</button>
             <button 
               onClick={() => setActiveTab('Admin')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${
-                activeTab === 'Admin' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'
-              }`}>Admin</button>
+              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Admin' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Admin</button>
           </div>
 
           <div className="border-b border-gray-100 mb-6"></div>
 
-          <form onSubmit={(e) => { e.preventDefault(); onLoginSuccess?.(activeTab); }}>
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700 text-center">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
             <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
               Login sebagai {activeTab}
             </h2>
 
             <div className="mb-4">
               <label htmlFor="email" className="block text-[13px] font-bold text-[#334155] mb-2">Email</label>
-              <input type="email" id="email" placeholder="nama@email.com" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400" />
+              <input
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="nama@email.com"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400"
+              />
             </div>
 
             <div className="mb-4">
               <label htmlFor="password" className="block text-[13px] font-bold text-[#334155] mb-2">Kata sandi</label>
-              <input type="password" id="password" placeholder="Kata sandi" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400" />
+              <input
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="Kata sandi"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400"
+              />
             </div>
 
             <div className="flex items-center justify-between mt-5 mb-8">
@@ -69,12 +105,15 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
               </button>
             </div>
 
-            <button type="submit" className="w-full bg-[#007AFF] hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition duration-200 mb-6 shadow-md shadow-blue-200/50 text-[15px]">
-              Masuk
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full font-bold py-3.5 rounded-xl transition duration-200 mb-6 text-[15px] ${loading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-[#007AFF] hover:bg-blue-600 text-white shadow-md shadow-blue-200/50'}`}
+            >
+              {loading ? 'Memproses...' : 'Masuk'}
             </button>
           </form>
 
-          {/* UBAH BAGIAN INI: Mengubah tag <a> menjadi <button> dan memanggil fungsi onNavigateToRegister */}
           <p className="text-center text-xs text-gray-500">
             Belum punya akun?{' '}
             <button 
@@ -84,7 +123,6 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
               Daftar
             </button>
           </p>
-          
         </div>
       </div>
     </div>

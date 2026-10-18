@@ -1,0 +1,29 @@
+[
+  {
+    "id": "PSN-240518A1",
+    "userId": "1",
+    "namaPelanggan": "Febru Ferdiansyah",
+    "namaOutlet": "Bersih Laundry Setiabudi",
+    "layanan": "Cuci + Setrika",
+    "berat": 5,
+    "totalHarga": 50000,
+    "alamat": "Jl. Setiabudi No. 10",
+    "estimasi": "Estimasi besok, 14.00",
+    "status": "Sedang diproses",
+    "createdAt": "2026-05-18T08:30:00.000Z",
+    "updatedAt": "2026-05-18T08:30:00.000Z"
+  },
+  {
+    "id": "PSN-A2FBCDA4",
+    "userId": "1792298674083",
+    "namaOutlet": "Bersih Laundry Setiabudi",
+    "layanan": "Cuci Kering",
+    "berat": 3,
+    "totalHarga": 30000,
+    "alamat": "Jl. Contoh",
+    "estimasi": "Besok",
+    "status": "Dibatalkan",
+    "createdAt": "2026-10-18T04:46:27.283Z",
+    "updatedAt": "2026-10-18T04:46:27.310Z"
+  }
+]

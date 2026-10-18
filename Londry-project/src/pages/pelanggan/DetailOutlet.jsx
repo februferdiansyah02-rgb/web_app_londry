@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function DetailOutlet({ onBack }) {
+export default function DetailOutlet({ onBack, onPesanSuccess }) {
   const [selectedService, setSelectedService] = useState('Cuci + Setrika');
   const [showNotif, setShowNotif] = useState(false);
 
@@ -29,10 +29,25 @@ export default function DetailOutlet({ onBack }) {
   ];
 
   const handlePesan = () => {
+    // Buat data pesanan baru
+    const pesananBaru = {
+      id: 'ML-' + Math.floor(100000 + Math.random() * 900000),
+      namaOutlet: 'Bersih Laundry Setiabudi',
+      layanan: selectedService,
+      status: 'Sedang diproses',
+      waktu: 'Hari ini, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      estimasi: 'Estimasi besok, 14.00'
+    };
+
+    if (onPesanSuccess) {
+      onPesanSuccess(pesananBaru);
+    }
+
     setShowNotif(true);
     setTimeout(() => {
       setShowNotif(false);
-    }, 3000);
+      if (onBack) onBack(); // Otomatis kembali setelah notifikasi muncul
+    }, 2000);
   };
 
   return (
@@ -47,11 +62,11 @@ export default function DetailOutlet({ onBack }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          Pesanan berhasil dikirim ke outlet!
+          Pesanan berhasil dibuat & masuk ke daftar pesanan!
         </div>
       </div>
 
-      <div className="bg-white w-full h-[90vh] md:h-auto md:max-h-[85vh] md:max-w-md lg:max-w-lg rounded-t-[2rem] md:rounded-[2rem] flex flex-col relative overflow-hidden animate-[translateY_0.3s_ease-out]">
+      <div className="bg-white w-full h-[90vh] md:h-auto md:max-h-[85vh] md:max-w-md lg:max-w-lg rounded-t-[2rem] md:rounded-[2rem] flex flex-col relative overflow-hidden">
         
         <div className="relative h-48 w-full flex-shrink-0">
           <img 
@@ -92,22 +107,6 @@ export default function DetailOutlet({ onBack }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
             Jl. Dr. Setiabudi No. 156, Bandung
-          </div>
-
-          <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
-            <div className="flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Buka sampai 20.00
-            </div>
-            <div className="flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              0,8 km dari kamu
-            </div>
           </div>
 
           <div className="border-t border-gray-100 pt-6">
@@ -159,15 +158,12 @@ export default function DetailOutlet({ onBack }) {
 
         <div className="absolute bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 px-6 flex justify-between items-center shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
           <div>
-            <p className="text-xs text-gray-500 mb-0.5">Mulai dari</p>
-            <div>
-              <span className="text-xl font-bold text-blue-600">Rp6.000</span>
-              <span className="text-xs text-gray-500"> /kg</span>
-            </div>
+            <p className="text-xs text-gray-500 mb-0.5">Pilihan Layanan</p>
+            <p className="text-sm font-bold text-[#0B254D]">{selectedService}</p>
           </div>
           <button 
             onClick={handlePesan}
-            className="bg-[#007AFF] hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-md shadow-blue-200/50 transition-colors active:scale-95"
+            className="bg-[#007AFF] hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition-colors active:scale-95"
           >
             Pesan sekarang
           </button>
