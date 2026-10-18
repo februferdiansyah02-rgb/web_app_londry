@@ -5,12 +5,12 @@ import path from "path";
 const DATA_DIR = path.resolve("data", "pelanggan");
 const FILE_PATH = path.join(DATA_DIR, "profiles.json");
 
-// Pastikan folder data/pelanggan tersedia
+// Pastikan folder tersedia
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Pastikan file profiles.json tersedia
+// Buat file kosong jika belum tersedia
 if (!fs.existsSync(FILE_PATH)) {
   fs.writeFileSync(FILE_PATH, "[]", "utf-8");
 }
@@ -21,7 +21,11 @@ const readProfiles = () => {
 };
 
 const writeProfiles = (profiles) => {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(profiles, null, 2), "utf-8");
+  fs.writeFileSync(
+    FILE_PATH,
+    JSON.stringify(profiles, null, 2),
+    "utf-8"
+  );
 };
 
 export const Pelanggan = {
@@ -40,10 +44,12 @@ export const Pelanggan = {
   create({ userId, name, email, alamat = "", telepon = "" }) {
     const profiles = readProfiles();
 
-    // Cegah duplikasi profil untuk user yang sama
-    if (profiles.find((p) => p.userId === userId)) {
+    // Cegah profil ganda untuk pengguna yang sama
+    if (profiles.some((p) => p.userId === userId)) {
       throw new Error("Profil pelanggan sudah tersedia untuk user ini");
     }
+
+    const now = new Date().toISOString();
 
     const profile = {
       id: String(Date.now()),
@@ -52,8 +58,8 @@ export const Pelanggan = {
       email,
       alamat,
       telepon,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     profiles.push(profile);
@@ -65,29 +71,53 @@ export const Pelanggan = {
   updateByUserId(userId, updates) {
     const profiles = readProfiles();
     const index = profiles.findIndex((p) => p.userId === userId);
+
     if (index === -1) {
       return null;
     }
 
+    // Batasi kolom yang boleh diperbarui
+    const allowedUpdates = {};
+
+    for (const field of ["name", "alamat", "telepon"]) {
+      if (updates[field] !== undefined) {
+        if (typeof updates[field] !== "string") {
+          throw new Error(`${field} harus berupa teks`);
+        }
+
+        allowedUpdates[field] = updates[field].trim();
+      }
+    }
+
+    if (
+      allowedUpdates.name !== undefined &&
+      allowedUpdates.name.length === 0
+    ) {
+      throw new Error("Nama tidak boleh kosong");
+    }
+
     profiles[index] = {
       ...profiles[index],
-      ...updates,
+      ...allowedUpdates,
       updatedAt: new Date().toISOString(),
     };
 
     writeProfiles(profiles);
+
     return profiles[index];
   },
 
   removeByUserId(userId) {
     const profiles = readProfiles();
     const index = profiles.findIndex((p) => p.userId === userId);
+
     if (index === -1) {
       return null;
     }
 
     const [dihapus] = profiles.splice(index, 1);
     writeProfiles(profiles);
+
     return dihapus;
   },
 };
