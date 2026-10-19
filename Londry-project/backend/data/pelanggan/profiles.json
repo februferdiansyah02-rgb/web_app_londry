@@ -8,5 +8,15 @@
     "telepon": "082287196964",
     "createdAt": "2026-10-18T05:29:41.637Z",
     "updatedAt": "2026-10-18T05:29:41.637Z"
+  },
+  {
+    "id": "1792370316285",
+    "userId": "1792370316279",
+    "name": "alfirajib",
+    "email": "alfirajib7@gmail.com",
+    "alamat": "jl merdeka",
+    "telepon": "085179535346",
+    "createdAt": "2026-10-19T00:38:36.285Z",
+    "updatedAt": "2026-10-19T00:39:04.848Z"
   }
 ]
