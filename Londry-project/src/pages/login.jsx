@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import { apiLogin } from '../api';
 
+const ROLE_LABELS = {
+  Pelanggan: { key: 'customer', label: 'Pelanggan', color: 'blue' },
+  'Mitra Laundry': { key: 'outlet', label: 'Mitra Laundry', color: 'indigo' },
+  Admin: { key: 'admin', label: 'Admin', color: 'slate' },
+};
+
+const ROLE_COLORS = {
+  blue: { bg: 'bg-blue-50', border: 'border-blue-200', ring: 'ring-blue-500', active: 'bg-blue-600', hover: 'hover:bg-blue-700', text: 'text-blue-600', textDark: 'text-blue-500' },
+  indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', ring: 'ring-indigo-500', active: 'bg-indigo-600', hover: 'hover:bg-indigo-700', text: 'text-indigo-600', textDark: 'text-indigo-500' },
+  slate: { bg: 'bg-slate-50', border: 'border-slate-200', ring: 'ring-slate-500', active: 'bg-slate-600', hover: 'hover:bg-slate-700', text: 'text-slate-600', textDark: 'text-slate-500' },
+};
+
 export default function Login({ onNavigateToRegister, onNavigateToForgotPassword, onLoginSuccess }) {
   const [activeTab, setActiveTab] = useState('Pelanggan');
 
@@ -9,16 +21,26 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const roleConfig = ROLE_LABELS[activeTab];
+  const colors = ROLE_COLORS[roleConfig.color];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
+    if (!email || !password) {
+      setError('Email dan kata sandi wajib diisi');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const data = await apiLogin(email, password);
+      const data = await apiLogin(email, password, roleConfig.key);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      onLoginSuccess?.(data);
+      // Kirim role yang dipilih agar App.jsx bisa arahkan ke dashboard yang sesuai.
+      onLoginSuccess?.({ ...data, role: roleConfig.key });
     } catch (err) {
       setError(err.message || 'Login gagal. Coba lagi.');
     } finally {
@@ -27,32 +49,36 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-200 flex items-center justify-center p-4 font-sans">
+    <div className={`min-h-screen ${colors.bg} flex items-center justify-center p-4 font-sans`}>
       <div className="w-full max-w-md">
 
         {/* Bagian Logo */}
         <div className="flex justify-center items-center mb-8">
-          <div className="w-12 h-12 bg-blue-500 rounded-[14px] flex items-center justify-center mr-3 shadow-lg shadow-blue-200">
+          <div className={`w-12 h-12 ${colors.active === 'bg-blue-600' ? 'bg-blue-500' : colors.active === 'bg-indigo-600' ? 'bg-indigo-500' : 'bg-slate-500'} rounded-[14px] flex items-center justify-center mr-3 shadow-lg`}>
              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h16v16H4z M4 8h16 M12 16a4 4 0 100-8 4 4 0 000 8z" />
              </svg>
           </div>
           <h1 className="text-3xl font-extrabold text-[#0B254D] tracking-tight">
-            <span className="text-blue-500">My</span>Laundry
+            <span className={colors.textDark}>My</span>Laundry
           </h1>
         </div>
 
         <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-xl w-full">
           <div className="bg-gray-50 rounded-2xl p-1.5 flex justify-between items-center mb-6">
-            <button 
-              onClick={() => setActiveTab('Pelanggan')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Pelanggan' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Pelanggan</button>
-            <button 
-              onClick={() => setActiveTab('Mitra Laundry')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Mitra Laundry' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Mitra Laundry</button>
-            <button 
-              onClick={() => setActiveTab('Admin')}
-              className={`flex-1 py-2 rounded-xl text-sm transition-all ${activeTab === 'Admin' ? 'bg-white text-blue-600 font-bold shadow-sm' : 'text-gray-500 font-semibold hover:text-gray-700'}`}>Admin</button>
+            {Object.entries(ROLE_LABELS).map(([tab, info]) => {
+              const c = ROLE_COLORS[info.color];
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${isActive ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  {info.label}
+                </button>
+              );
+            })}
           </div>
 
           <div className="border-b border-gray-100 mb-6"></div>
@@ -65,7 +91,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
 
           <form onSubmit={handleSubmit}>
             <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
-              Login sebagai {activeTab}
+              Login sebagai {roleConfig.label}
             </h2>
 
             <div className="mb-4">
@@ -76,7 +102,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="nama@email.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400"
+                className={`w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:${colors.ring} focus:border-transparent text-sm placeholder-gray-400`}
               />
             </div>
 
@@ -88,7 +114,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 placeholder="Kata sandi"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm placeholder-gray-400"
+                className={`w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:${colors.ring} focus:border-transparent text-sm placeholder-gray-400`}
               />
             </div>
 
@@ -108,7 +134,7 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
             <button
               type="submit"
               disabled={loading}
-              className={`w-full font-bold py-3.5 rounded-xl transition duration-200 mb-6 text-[15px] ${loading ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-[#007AFF] hover:bg-blue-600 text-white shadow-md shadow-blue-200/50'}`}
+              className={`w-full font-bold py-3.5 rounded-xl transition duration-200 mb-6 text-[15px] ${loading ? 'bg-gray-400 text-white cursor-not-allowed' : `${colors.active} ${colors.hover} text-white shadow-md shadow-${colors.text === 'text-blue-600' ? 'blue-200/50' : colors.text === 'text-indigo-600' ? 'indigo-200/50' : 'slate-200/50'}`}`}
             >
               {loading ? 'Memproses...' : 'Masuk'}
             </button>
@@ -118,10 +144,14 @@ export default function Login({ onNavigateToRegister, onNavigateToForgotPassword
             Belum punya akun?{' '}
             <button 
               onClick={onNavigateToRegister} 
-              className="font-bold text-[#007AFF] hover:text-blue-700 transition-colors"
+              className={`font-bold ${colors.textDark} hover:opacity-80 transition-colors`}
             >
               Daftar
             </button>
+          </p>
+
+          <p className="text-center text-xs text-gray-400 mt-4">
+            Pilih role yang sesuai dengan akun Anda sebelum masuk.
           </p>
         </div>
       </div>

@@ -7,6 +7,7 @@
     "alamat": "matraman , utan kayu ,Rw9/RT10",
     "telepon": "082287196964",
     "createdAt": "2026-10-18T05:29:41.637Z",
+<<<<<<< Updated upstream
     "updatedAt": "2026-10-18T05:29:41.637Z"
   },
   {
@@ -18,5 +19,48 @@
     "telepon": "085179535346",
     "createdAt": "2026-10-19T00:38:36.285Z",
     "updatedAt": "2026-10-19T00:39:04.848Z"
+=======
+    "updatedAt": "2026-10-19T04:43:24.629Z"
+  },
+  {
+    "id": "1792354006514",
+    "userId": "1792354006512",
+    "name": "ferdi",
+    "email": "ferdi@gmail.com",
+    "alamat": "jalan merdeka bandung ",
+    "telepon": "082287196964",
+    "createdAt": "2026-10-18T20:06:46.514Z",
+    "updatedAt": "2026-10-18T20:06:46.514Z"
+  },
+  {
+    "id": "1792392321180",
+    "userId": "1792392321173",
+    "name": "Febru Ferdiansyah",
+    "email": "ansyah@gmail.com",
+    "alamat": "matraman , utan kayu ,Rw9/RT10",
+    "telepon": "082287196964",
+    "createdAt": "2026-10-19T06:45:21.180Z",
+    "updatedAt": "2026-10-19T06:45:21.180Z"
+  },
+  {
+    "id": "1792392713849",
+    "userId": "1792392713846",
+    "name": "Test User",
+    "email": "test@example.com",
+    "alamat": "Jl. Test",
+    "telepon": "08123456789",
+    "createdAt": "2026-10-19T06:51:53.849Z",
+    "updatedAt": "2026-10-19T06:51:53.849Z"
+  },
+  {
+    "id": "1792392725812",
+    "userId": "1792392725809",
+    "name": "Test User",
+    "email": "testuser2@example.com",
+    "alamat": "Jl. Test",
+    "telepon": "08123456789",
+    "createdAt": "2026-10-19T06:52:05.812Z",
+    "updatedAt": "2026-10-19T06:52:05.812Z"
+>>>>>>> Stashed changes
   }
 ]

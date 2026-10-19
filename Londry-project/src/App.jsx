@@ -1,9 +1,15 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  apiCreatePesanan,
+  apiGetPesananSaya,
+  apiGetProfil,
+} from "./api";
 import Login from "./pages/login";
 import Register from "./pages/registrasi";
 import LupaKataSandi from "./pages/lupa-kata-sandi";
 import Navigation from "./component/Navigation";
 import BerandaPelanggan from "./pages/pelanggan/beranda";
+import DashboardMitra from "./pages/mitra-londry/DashboardMitra";
 import DetailOutlet from "./pages/pelanggan/DetailOutlet";
 import RincianPesanan from "./pages/pelanggan/RincianPesanan";
 import PetaOutlet from "./pages/pelanggan/petaoutlet";
@@ -49,22 +55,81 @@ function App() {
   // Data outlet yang dipilih dari Beranda.
   const [selectedOutlet, setSelectedOutlet] = useState(null);
 
-  const [daftarPesanan, setDaftarPesanan] = useState([
-    {
-      id: "ML-240518",
-      namaOutlet: "Bersih Laundry Setiabudi",
-      layanan: "Cuci + Setrika",
-      status: "Sedang diproses",
-      estimasi: "Estimasi besok, 14.00",
-      waktu: "Hari ini, 08.30",
-    },
-  ]);
+  const [daftarPesanan, setDaftarPesanan] = useState([]);
+  const [pesananLoading, setPesananLoading] = useState(false);
 
   const [selectedPesanan, setSelectedPesanan] = useState(null);
   const [pesananView, setPesananView] = useState("daftar");
 
-  const handleTambahPesanan = (pesananBaru) => {
-    setDaftarPesanan((previous) => [pesananBaru, ...previous]);
+  // Muat daftar pesanan dari API saat token tersedia.
+  useEffect(() => {
+    let active = true;
+
+    const loadPesanan = async () => {
+      if (!token) return;
+      setPesananLoading(true);
+      try {
+        const data = await apiGetPesananSaya(token);
+        if (!active) return;
+        const daftar = (data.data || []).map((p) => ({
+          id: p.id,
+          namaOutlet: p.namaOutlet,
+          layanan: p.layanan,
+          status: p.status,
+          estimasi: p.estimasi || "",
+          waktu: p.createdAt || "",
+          totalHarga: p.totalHarga,
+          alamat: p.alamat,
+          userId: p.userId,
+        }));
+        setDaftarPesanan(daftar);
+      } catch (err) {
+        if (!active) return;
+        console.warn("Gagal memuat pesanan:", err.message);
+        setDaftarPesanan([]);
+      } finally {
+        if (active) setPesananLoading(false);
+      }
+    };
+
+    loadPesanan();
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  const handleTambahPesanan = async (pesananBaru) => {
+    if (!token) return;
+
+    try {
+      const data = await apiCreatePesanan(token, {
+        namaOutlet: pesananBaru.namaOutlet,
+        layanan: pesananBaru.layanan,
+        berat: pesananBaru.berat || 1,
+        totalHarga: pesananBaru.totalHarga || 0,
+        alamat: pesananBaru.alamatOutlet || "",
+        estimasi: pesananBaru.estimasi || "",
+      });
+
+      const p = data.pesanan;
+      const baru = {
+        id: p.id,
+        namaOutlet: p.namaOutlet,
+        layanan: p.layanan,
+        status: p.status,
+        estimasi: p.estimasi || "",
+        waktu: p.createdAt || "",
+        totalHarga: p.totalHarga,
+        alamat: p.alamat,
+      };
+
+      setDaftarPesanan((previous) => [baru, ...previous]);
+    } catch (err) {
+      console.error("Gagal membuat pesanan:", err.message);
+      // Fallback: tambahkan secara lokal agar UI tidak macet
+      setDaftarPesanan((previous) => [pesananBaru, ...previous]);
+    }
   };
 
   const handlePilihOutlet = (outlet) => {
@@ -102,11 +167,15 @@ function App() {
     token: newToken,
     user: newUser,
     profile: newProfile,
+    role: roleOverride,
   }) => {
     setToken(newToken);
     setUser(newUser);
     setProfile(newProfile ?? null);
-    setUserRole(DISPLAY_ROLE[newUser.role] || "Pelanggan");
+    // Gunakan role yang dikirim dari login (tab yang dipilih) sebagai prioritas,
+    // lalu fallback ke role dari data user server.
+    const roleDariServer = DISPLAY_ROLE[newUser.role] || "Pelanggan";
+    setUserRole(roleOverride ? DISPLAY_ROLE[roleOverride] || roleDariServer : roleDariServer);
 
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
@@ -153,6 +222,17 @@ function App() {
   const renderHomeContent = () => {
     switch (activeMenu) {
       case "Beranda":
+        if (userRole === "Mitra Laundry") {
+          return (
+            <DashboardMitra
+              namaPengguna={user?.name || profile?.name || "Mitra"}
+              namaOutlet={profile?.outletName || user?.outletName || "Bersih Laundry Mitra"}
+              token={token}
+              onLogout={handleLogout}
+            />
+          );
+        }
+
         if (userRole === "Pelanggan") {
           if (homeView === "peta") {
             return (
@@ -177,6 +257,7 @@ function App() {
                 <DetailOutlet
                   key={selectedOutlet.id}
                   outlet={selectedOutlet}
+                  token={token}
                   onBack={handleTutupOutlet}
                   onPesanSuccess={handleTambahPesanan}
                 />
@@ -258,6 +339,7 @@ function App() {
       ) : page === "register" ? (
         <Register
           onNavigateToLogin={() => setCurrentPage("login")}
+          onLoginSuccess={handleLoginSuccess}
         />
       ) : page === "forgot-password" ? (
         <LupaKataSandi

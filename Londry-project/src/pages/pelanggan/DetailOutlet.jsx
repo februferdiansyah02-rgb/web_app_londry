@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 export default function DetailOutlet({
   outlet,
+  token,
   onBack,
   onPesanSuccess,
 }) {
@@ -100,6 +101,15 @@ export default function DetailOutlet({
 
     const now = new Date();
 
+    // Konversi harga string (contoh "Rp8.000") ke angka untuk totalHarga
+    const parseHarga = (h) => {
+      if (!h) return 0;
+      const angka = String(h).replace(/[^0-9]/g, "");
+      return angka ? parseInt(angka, 10) : 0;
+    };
+
+    const totalHarga = parseHarga(selectedService.harga);
+
     const pesananBaru = {
       id: `ML-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       outletId: outlet.id,
@@ -109,6 +119,8 @@ export default function DetailOutlet({
       layanan: selectedService.nama,
       harga: selectedService.harga,
       satuan: selectedService.satuan,
+      berat: 1,
+      totalHarga,
       status: "Menunggu konfirmasi",
       waktu: `Hari ini, ${now.toLocaleTimeString("id-ID", {
         hour: "2-digit",

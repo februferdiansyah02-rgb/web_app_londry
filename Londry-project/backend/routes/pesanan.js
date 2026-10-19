@@ -2,6 +2,7 @@ import express from "express";
 import {
   createPesanan,
   getPesananSaya,
+  getPesananOutlet,
   getAllPesanan,
   getPesananById,
   updateStatusPesanan,
@@ -17,6 +18,14 @@ router.post("/", authenticateToken, createPesanan);
 
 // GET /api/pesanan/me - Pesanan saya (pelanggan)
 router.get("/me", authenticateToken, getPesananSaya);
+
+// GET /api/pesanan/outlet/me - Pesanan masuk ke outlet yang login
+router.get(
+  "/outlet/me",
+  authenticateToken,
+  authorizeRoles("outlet"),
+  getPesananOutlet
+);
 
 // GET /api/pesanan - Semua pesanan (hanya admin)
 router.get("/", authenticateToken, authorizeRoles("admin"), getAllPesanan);

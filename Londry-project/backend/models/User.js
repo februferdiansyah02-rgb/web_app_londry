@@ -21,6 +21,7 @@ export const User = {
     return data;
   },
 
+<<<<<<< Updated upstream
   async create({ name, email, password, role = "pelanggan" }) {
     const { data, error } = await supabase
       .from("users")
@@ -29,5 +30,28 @@ export const User = {
       .single();
     if (error) throw error;
     return data;
+=======
+  create({ name, email, password, role = "customer", outletName }) {
+    const users = readUsers();
+
+    if (users.some((u) => u.email === email)) {
+      throw new Error("Email sudah terdaftar");
+    }
+
+    const user = {
+      id: String(Date.now()),
+      name,
+      email,
+      password,
+      role,
+      outletName: outletName || null,
+      createdAt: new Date().toISOString(),
+    };
+
+    users.push(user);
+    writeUsers(users);
+
+    return withoutPassword(user);
+>>>>>>> Stashed changes
   },
 };

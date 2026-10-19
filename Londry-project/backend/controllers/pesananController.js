@@ -1,6 +1,7 @@
 import { Pesanan } from "../models/Pesanan.js";
+import { User } from "../models/User.js";
 
-export const createPesanan = (req, res) => {
+export const createPesanan = async (req, res) => {
   try {
     const {
       namaOutlet,
@@ -18,9 +19,13 @@ export const createPesanan = (req, res) => {
       });
     }
 
+    // Ambil nama pelanggan dari data user (karena JWT hanya menyimpan id/email/role)
+    const user = User.findById(req.user.id);
+    const namaPelanggan = user ? user.name : "Pelanggan";
+
     const pesanan = Pesanan.create({
       userId: req.user.id,
-      namaPelanggan: req.user.name,
+      namaPelanggan,
       namaOutlet,
       layanan,
       berat,
@@ -34,6 +39,37 @@ export const createPesanan = (req, res) => {
       success: true,
       message: "Pesanan londry berhasil dibuat",
       pesanan,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Terjadi kesalahan pada server",
+    });
+  }
+};
+
+export const getPesananOutlet = (req, res) => {
+  try {
+    // Ambil data user lengkap dari database untuk nama outlet
+    const user = User.findById(req.user.id);
+    const outletName = (user && user.outletName) || user.name || "Outlet";
+
+    let daftar = Pesanan.findAll();
+
+    // Filter pesanan yang masuk ke outlet ini (berdasarkan namaOutlet)
+    if (outletName) {
+      daftar = daftar.filter((p) => p.namaOutlet === outletName);
+    }
+
+    // Urutkan terbaru dulu
+    daftar.sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    return res.json({
+      success: true,
+      message: `Daftar pesanan outlet ${outletName}`,
+      data: daftar,
     });
   } catch (error) {
     return res.status(500).json({

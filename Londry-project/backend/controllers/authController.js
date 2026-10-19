@@ -9,7 +9,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, outletName: user.outletName || null },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
@@ -17,7 +17,7 @@ const generateToken = (user) => {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role, alamat, telepon } = req.body;
+    const { name, email, password, role, alamat, telepon, outletName } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -48,16 +48,20 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
       role: role || "customer",
+      outletName,
     });
 
-    // Buat profil pelanggan dengan semua data yang terdaftar (termasuk alamat)
-    const profile = Pelanggan.create({
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-      alamat: alamat || "",
-      telepon: telepon || "",
-    });
+    // Buat profil pelanggan hanya untuk role customer (pelanggan)
+    let profile = null;
+    if ((role || "customer") === "customer") {
+      profile = Pelanggan.create({
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        alamat: alamat || "",
+        telepon: telepon || "",
+      });
+    }
 
     const token = generateToken(user);
 

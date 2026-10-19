@@ -3,7 +3,7 @@ import { apiRegister } from '../api';
 
 const API_ROLE = { Pelanggan: 'customer', 'Mitra Laundry': 'outlet', Admin: 'admin' };
 
-export default function Register({ onNavigateToLogin }) {
+export default function Register({ onNavigateToLogin, onLoginSuccess }) {
   const [activeTab, setActiveTab] = useState('Pelanggan');
 
   const [nama, setNama] = useState('');
@@ -36,7 +36,7 @@ export default function Register({ onNavigateToLogin }) {
 
     setLoading(true);
     try {
-      await apiRegister({
+      const data = await apiRegister({
         name: nama,
         email,
         password,
@@ -44,13 +44,28 @@ export default function Register({ onNavigateToLogin }) {
         alamat,
         telepon,
       });
-      setSuccess('Registrasi berhasil! Silakan masuk dengan akun Anda.');
+
+      // Simpan sesi login otomatis setelah registrasi berhasil
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+      if (data.profile) {
+        localStorage.setItem('profile', JSON.stringify(data.profile));
+      }
+
+      setSuccess('Registrasi berhasil! Anda sudah login.');
       setNama('');
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setAlamat('');
       setTelepon('');
+
+      // Navigasi ke halaman utama
+      onLoginSuccess?.(data);
     } catch (err) {
       setError(err.message || 'Registrasi gagal. Coba lagi.');
     } finally {

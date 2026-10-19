@@ -25,5 +25,33 @@
     "status": "Dibatalkan",
     "createdAt": "2026-10-18T04:46:27.283Z",
     "updatedAt": "2026-10-18T04:46:27.310Z"
+  },
+  {
+    "id": "PSN-67FF6394",
+    "userId": "1792392725809",
+    "namaPelanggan": "Test User",
+    "namaOutlet": "Bersih Laundry Setiabudi",
+    "layanan": "Cuci + Setrika",
+    "berat": 5,
+    "totalHarga": 40000,
+    "alamat": "Jl. Test",
+    "estimasi": "Estimasi besok",
+    "status": "Menunggu konfirmasi",
+    "createdAt": "2026-10-19T06:52:28.044Z",
+    "updatedAt": "2026-10-19T06:52:28.044Z"
+  },
+  {
+    "id": "PSN-85A1F61E",
+    "userId": "1792392725809",
+    "namaPelanggan": "Test User",
+    "namaOutlet": "Bersih Laundry Setiabudi",
+    "layanan": "Cuci Kering",
+    "berat": 3,
+    "totalHarga": 30000,
+    "alamat": "Jl. Contoh Baru",
+    "estimasi": "Estimasi besok",
+    "status": "Menunggu konfirmasi",
+    "createdAt": "2026-10-19T07:13:16.755Z",
+    "updatedAt": "2026-10-19T07:13:16.755Z"
   }
 ]
